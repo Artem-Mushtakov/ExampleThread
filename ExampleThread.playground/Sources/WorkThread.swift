@@ -3,29 +3,23 @@ import Foundation
 ///Класс припайки чипов
 
 public class WorkThread: Thread {
-
-    let lockThread = NSCondition()
-    var isWait: Bool
-
-    public init(isWait: Bool) {
-        self.isWait = isWait
+    
+    private var storage: Storage
+    
+    public init(storage: Storage) {
+        self.storage = storage
     }
-
+    
     public override func main() {
-        RunLoop.current.add(solderTheChip(), forMode: .common)
-        RunLoop.current.run()
-    }
-
-    func solderTheChip() -> Timer {
-        let timerSolderTheChip = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true, block: { [unowned self] _ in
-            lockThread.lock()
-            guard GenerateThread.arrayChip.count != 0 else { return self.lockThread.wait()}
-            GenerateThread.arrayChip.removeLast().sodering()
-            print("\nПРИПОЯЛИ СХЕМУ: \(GenerateThread.arrayChip)")
-            print("Количество экземпляров в массиве: \(GenerateThread.arrayChip.count) \n")
-            lockThread.signal()
-            lockThread.unlock()
-        })
-        return timerSolderTheChip
+        while true {
+            while storage.isEmpty == false {
+                storage.condition.lock()
+                let storageChip = storage.pop()
+                storageChip.sodering()
+                print("Припаяли чип \(storageChip)")
+                storage.condition.signal()
+                storage.condition.unlock()
+            }
+        }
     }
 }

@@ -1,7 +1,14 @@
-import UIKit
+import Foundation
 
-let generateThread = GenerateThread(chip: Chip.make())
-let workThread = WorkThread(isWait: true)
+let storage = Storage()
 
+let generateThread = GenerateThread(storage: storage)
+let workThread = WorkThread(storage: storage)
 generateThread.start()
 workThread.start()
+sleep(20)
+generateThread.cancel()
+workThread.cancel()
+
+
+
