@@ -3,22 +3,41 @@ import Foundation
 public class Storage {
     
     private var count = 0
-    var condition = NSCondition()
+    private var condition = NSCondition()
     var storage: [Chip] = []
-    
+    public var isAvailable = false
+
     public var isEmpty: Bool {
-        storage.isEmpty
+        return storage.isEmpty
     }
     
     public init() {}
     
-    func push() {
-        storage.append(Chip.make())
+    func push(chip: Chip) {
+
+        condition.lock()
+        storage.append(chip)
         count += 1
         print("Экземпляр чипа № \(count) добавлен в хранилище.")
+        isAvailable = true
+        condition.signal()
+        condition.unlock()
     }
     
     func pop() -> Chip {
-        return storage.removeLast()
+
+        while (!isAvailable) {
+            condition.wait()
+        }
+        
+        let storageLast = storage.removeLast()
+        condition.signal()
+        condition.unlock()
+
+        if isEmpty {
+            isAvailable = false
+        }
+
+        return storageLast
     }
 }

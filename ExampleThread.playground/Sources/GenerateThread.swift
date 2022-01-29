@@ -17,10 +17,7 @@ public class GenerateThread: Thread {
     
     public func createChip() -> Timer {
         let timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true, block: { [unowned self] _ in
-            storage.condition.lock()
-            storage.push()
-            storage.condition.signal()
-            storage.condition.unlock()
+            storage.push(chip: Chip.make())
         })
         return timer
     }
